@@ -5,6 +5,8 @@
 
 #define RAND_SEED time(NULL)
 #define POPULATION_SIZE 5
+#define POPULATION_NUMBER 4
+#define ITERATIONS 120
 
 static size_t matrix[5][5] = {
     {0,  2,  7, 2, 8},
@@ -38,7 +40,7 @@ static size_t* generate_route() {
     if (free_or_taken[temp])
       --i;
     else {
-      free_or_taken[i] = 1;
+      free_or_taken[temp] = 1;
       population[i] = temp + 1;
     }
   }
@@ -60,9 +62,39 @@ static void print_route(size_t* route, size_t sz, size_t first_index, size_t sec
     if (!printed_sth)
       printf(" ");
   }
+  printf("\n");
 }
 
 int main() {
   srand(RAND_SEED);
+  size_t* routes[POPULATION_NUMBER];
+  printf("Начальные маршруты:\n");
+  for (size_t i = 0; i < POPULATION_NUMBER; ++i) {
+    routes[i] = generate_route();
+    print_route(routes[i], POPULATION_SIZE, 0, 0);
+  }
+  for (size_t i = 0; i < ITERATIONS; ++i) {
+    size_t first_row = (size_t)(random() % POPULATION_NUMBER);
+    size_t second_row = first_row;
+    while (first_row == second_row) {
+      second_row = (size_t)(random() % POPULATION_NUMBER);
+    }
+    size_t third_row = (size_t)(random() % POPULATION_NUMBER);
+    size_t fourth_row = third_row;
+    while (third_row == fourth_row) {
+      fourth_row = (size_t)(random() % POPULATION_NUMBER);
+    }
+    printf(
+        "Скрещиваем (%zu) & (%zu) и (%zu) & (%zu):\n",
+        first_row + 1,
+        second_row + 1,
+        third_row + 1,
+        fourth_row + 1
+    );
+  }
+  // free everything
+  for (size_t i = 0; i < POPULATION_NUMBER; ++i) {
+    free(routes[i]);
+  }
   return 0;
 }
