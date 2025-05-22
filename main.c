@@ -153,6 +153,19 @@ int main() {
     print_route(new_second, POPULATION_SIZE, first_index, second_index);
     print_route(new_third, POPULATION_SIZE, third_index, fourth_index);
     print_route(new_fourth, POPULATION_SIZE, third_index, fourth_index);
+    if ((double)rand() / RAND_MAX < MUTATION_PROB) {
+      printf("Произошла мутация!\n");
+      size_t row_index = (size_t)(random() % POPULATION_NUMBER);
+      size_t index1 = (size_t)(random() % POPULATION_SIZE);
+      size_t index2 = (size_t)(random() % POPULATION_SIZE);
+      size_t temp = routes[row_index][index1];
+      routes[row_index][index1] = routes[row_index][index2];
+      routes[row_index][index2] = temp;
+      print_route(new_first, POPULATION_SIZE, first_index, second_index);
+      print_route(new_second, POPULATION_SIZE, first_index, second_index);
+      print_route(new_third, POPULATION_SIZE, third_index, fourth_index);
+      print_route(new_fourth, POPULATION_SIZE, third_index, fourth_index);
+    }
     // обновляем маршруты:
     0 [routes] = new_first;
     1 [routes] = new_second;
