@@ -4,10 +4,10 @@
 #include <time.h>
 
 #define RAND_SEED time(NULL)
-#define POPULATION_SIZE 5
-#define POPULATION_NUMBER 4
+#define POPULATION_SIZE 5   /* длина маршрута */
+#define POPULATION_NUMBER 4 /* количество маршрутов */
 #define ITERATIONS 1
-#define MUTATION_PROB 0.01
+#define MUTATION_PROB 0.01 /* вероятность мутации */
 
 static size_t matrix[5][5] = {
     {0,  2,  7, 2, 8},
@@ -23,6 +23,14 @@ static void replace_section(size_t* row1, size_t* row2, size_t start, size_t fin
     i[row1] = i[row2];
     i[row2] = temp;
   }
+}
+
+static size_t* copy(size_t* arr, size_t sz) {
+  size_t* new_arr = (size_t*)malloc(sizeof(size_t) * sz);
+  for (size_t i = 0; i < sz; ++i) {
+    i[new_arr] = i[arr];
+  }
+  return new_arr;
 }
 
 static int count_route_length(size_t* route, size_t length) {
@@ -89,19 +97,27 @@ int main() {
         third_row + 1,
         fourth_row + 1
     );
+    // тут генерируем детей от первой пары
     size_t first_index = (size_t)(random() % (POPULATION_SIZE - 1) + 1);
     size_t second_index = (size_t)(random() % (POPULATION_SIZE - first_index) + first_index);
     print_route(routes[first_row], POPULATION_SIZE, first_index, second_index);
     print_route(routes[second_row], POPULATION_SIZE, first_index, second_index);
-    replace_section(routes[first_row], routes[second_row], first_index, second_index);
-
-    size_t third_index =
-        (size_t)(random() % (POPULATION_SIZE - 1) + 1);  // TODO: чтобы все участвовали
+    size_t* new_first = copy(routes[first_row], POPULATION_SIZE);
+    size_t* new_second = copy(routes[second_row], POPULATION_SIZE);
+    replace_section(new_first, new_second, first_index, second_index);
+    // а тут от второй пары
+    size_t third_index = (size_t)(random() % (POPULATION_SIZE - 1) + 1);
     size_t fourth_index = (size_t)(random() % (POPULATION_SIZE - third_index) + third_index);
     print_route(routes[third_row], POPULATION_SIZE, third_index, fourth_index);
     print_route(routes[fourth_row], POPULATION_SIZE, third_index, fourth_index);
-    replace_section(routes[third_row], routes[fourth_row], third_index, fourth_index);
-    //    printf("Полученные маршруты:\n");
+    size_t* new_third = copy(routes[third_row], POPULATION_SIZE);
+    size_t* new_fourth = copy(routes[fourth_row], POPULATION_SIZE);
+    replace_section(new_third, new_fourth, third_index, fourth_index);
+    for (size_t j = 0; j < POPULATION_NUMBER; ++j) {
+      // чистим маршруты, они будут заменены на новые
+      free(j[routes]);
+    }
+    printf("Полученные маршруты:\n");
   }
   // free everything
   for (size_t i = 0; i < POPULATION_NUMBER; ++i) {
