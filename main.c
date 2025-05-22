@@ -1,3 +1,4 @@
+#include <limits.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -6,7 +7,7 @@
 #define RAND_SEED time(NULL)
 #define POPULATION_SIZE 5   /* длина маршрута */
 #define POPULATION_NUMBER 4 /* количество маршрутов */
-#define ITERATIONS 1
+#define ITERATIONS 120
 #define MUTATION_PROB 0.01 /* вероятность мутации */
 
 static size_t matrix[5][5] = {
@@ -26,7 +27,8 @@ static void correct_route(size_t* row, size_t sz, size_t start, size_t finish) {
     if (i >= start - 1 && i <= finish - 1)
       continue;
     else {
-      for (size_t j = 0; j < POPULATION_SIZE; ++j) {
+      for (; true;) {
+        size_t j = (size_t)(random() % POPULATION_SIZE);
         if (!taken[j]) {
           row[i] = j + 1;
           taken[j] = 1;
@@ -58,7 +60,7 @@ static size_t* copy(size_t* arr, size_t sz) {
 static int count_route_length(size_t* route, size_t length) {
   int result = matrix[route[0]][route[length - 1]];
   for (size_t i = 0; i < length - 1; ++i) {
-    result += matrix[route[i]][route[i + 1]];
+    result += matrix[route[i] - 1][route[i + 1] - 1];
   }
   return result;
 }
@@ -90,7 +92,7 @@ static void print_route(size_t* route, size_t sz, size_t first_index, size_t sec
     } else
       printf(" ");
   }
-  printf("\n");
+  printf("\t|\ts=%d\n", count_route_length(route, POPULATION_SIZE));
 }
 
 int main() {
@@ -100,6 +102,11 @@ int main() {
   for (size_t i = 0; i < POPULATION_NUMBER; ++i) {
     routes[i] = generate_route();
     print_route(routes[i], POPULATION_SIZE, 0, 0);
+  }
+  int min_length = INT_MAX;
+  for (size_t i = 0; i < POPULATION_NUMBER; ++i) {
+    int temp = count_route_length(routes[i], POPULATION_SIZE);
+    min_length = min_length > temp ? temp : min_length;
   }
   for (size_t i = 0; i < ITERATIONS; ++i) {
     size_t first_row = (size_t)(random() % POPULATION_NUMBER);
@@ -141,14 +148,6 @@ int main() {
       free(j[routes]);
       j[routes] = NULL;
     }
-    fprintf(
-        stderr,
-        "Переставили местами с индекса %zu по индекс %zu и с %zu по %zu\n",
-        first_index,
-        second_index,
-        third_index,
-        fourth_index
-    );
     printf("Полученные маршруты:\n");
     print_route(new_first, POPULATION_SIZE, first_index, second_index);
     print_route(new_second, POPULATION_SIZE, first_index, second_index);
@@ -160,6 +159,17 @@ int main() {
     2 [routes] = new_third;
     3 [routes] = new_fourth;
   }
+  printf("ИТОГОВЫЕ МАРШРУТЫ:\n");
+  for (size_t i = 0; i < POPULATION_NUMBER; ++i) {
+    print_route(routes[i], POPULATION_SIZE, 0, 0);
+  }
+  printf("Минимальная длина маршрута изменилась с %d", min_length);
+  min_length = INT_MAX;
+  for (size_t i = 0; i < POPULATION_NUMBER; ++i) {
+    int temp = count_route_length(routes[i], POPULATION_SIZE);
+    min_length = min_length > temp ? temp : min_length;
+  }
+  printf(" до %d\n", min_length);
   // free everything
   for (size_t i = 0; i < POPULATION_NUMBER; ++i) {
     free(routes[i]);
