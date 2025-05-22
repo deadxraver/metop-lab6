@@ -17,12 +17,34 @@ static size_t matrix[5][5] = {
     {8,  1,  6, 4, 0}
 };
 
+static void correct_route(size_t* row, size_t sz, size_t start, size_t finish) {
+  bool taken[POPULATION_SIZE] = {0};
+  for (size_t i = start - 1; i <= finish - 1; ++i) {
+    taken[row[i] - 1] = 1;
+  }
+  for (size_t i = 0; i < sz; ++i) {
+    if (i >= start - 1 && i <= finish - 1)
+      continue;
+    else {
+      for (size_t j = 0; j < POPULATION_SIZE; ++j) {
+        if (!taken[j]) {
+          row[i] = j + 1;
+          taken[j] = 1;
+          break;
+        }
+      }
+    }
+  }
+}
+
 static void replace_section(size_t* row1, size_t* row2, size_t start, size_t finish) {
-  for (size_t i = start; i <= finish; ++i) {
+  for (size_t i = start - 1; i <= finish - 1; ++i) {
     int temp = i[row1];
     i[row1] = i[row2];
     i[row2] = temp;
   }
+  correct_route(row1, POPULATION_SIZE, start, finish);
+  correct_route(row2, POPULATION_SIZE, start, finish);
 }
 
 static size_t* copy(size_t* arr, size_t sz) {
@@ -57,6 +79,7 @@ static size_t* generate_route() {
 }
 
 static void print_route(size_t* route, size_t sz, size_t first_index, size_t second_index) {
+  printf("\t");
   for (size_t i = 0; i < sz; ++i) {
     if (i + 1 == first_index) {
       printf("|");
@@ -116,8 +139,26 @@ int main() {
     for (size_t j = 0; j < POPULATION_NUMBER; ++j) {
       // чистим маршруты, они будут заменены на новые
       free(j[routes]);
+      j[routes] = NULL;
     }
+    fprintf(
+        stderr,
+        "Переставили местами с индекса %zu по индекс %zu и с %zu по %zu\n",
+        first_index,
+        second_index,
+        third_index,
+        fourth_index
+    );
     printf("Полученные маршруты:\n");
+    print_route(new_first, POPULATION_SIZE, first_index, second_index);
+    print_route(new_second, POPULATION_SIZE, first_index, second_index);
+    print_route(new_third, POPULATION_SIZE, third_index, fourth_index);
+    print_route(new_fourth, POPULATION_SIZE, third_index, fourth_index);
+    // обновляем маршруты:
+    0 [routes] = new_first;
+    1 [routes] = new_second;
+    2 [routes] = new_third;
+    3 [routes] = new_fourth;
   }
   // free everything
   for (size_t i = 0; i < POPULATION_NUMBER; ++i) {
